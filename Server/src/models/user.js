@@ -1,14 +1,14 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  const User = sequelize.define(
+  sequelize.define(
     "User",
     {
       id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
         allowNull: false,
-        autoIncrement: true,
       },
       name: {
         type: DataTypes.STRING(50),
@@ -22,16 +22,21 @@ module.exports = (sequelize) => {
       carnet: {
         type: DataTypes.STRING,
       },
+      sex: {
+        type: DataTypes.ENUM('masculino', 'femenino', 'no definido'),
+        defaultValue: 'no definido',
+      },
+      paymentDate: {
+        type: DataTypes.DATE,
+      },
+      paymentDueDate: {
+        type: DataTypes.DATE,
+      },
+      paymentStatus: {
+        type: DataTypes.ENUM('Pagado', 'Pendiente', 'Vencido'),
+        defaultValue: 'Pendiente',
+      },
     },
     { timestamps: false }
   );
-
-  User.associate = (models) => {
-    User.hasMany(models.Membership, {
-      foreignKey: 'userId',
-      as: 'memberships',
-    });
-  };
-
-  return User;
 };

@@ -32,7 +32,7 @@ async function getUserById(req, res) {
 
 // Crear un nuevo usuario
 async function createUser(req, res) {
-  const { name, lastName, dni, carnet } = req.body;
+  const { name, lastName, dni, carnet, sex, paymentDate, paymentDueDate, paymentStatus } = req.body;
 
   try {
     const newUser = await User.create({
@@ -40,8 +40,13 @@ async function createUser(req, res) {
       lastName,
       dni,
       carnet,
+      sex,
+      paymentDate,
+      paymentDueDate,
+      paymentStatus,
     });
 
+    console.log('User has been created');
     res.status(201).json(newUser);
   } catch (error) {
     console.error('Error creating a new user:', error);
@@ -49,10 +54,13 @@ async function createUser(req, res) {
   }
 }
 
+
+
+
 // Actualizar un usuario por su ID
 async function updateUserById(req, res) {
   const userId = req.params.id;
-  const { name, lastName, dni, carnet } = req.body;
+  const { name, lastName, dni, carnet, sex, paymentDate, paymentDueDate, paymentStatus } = req.body;
 
   try {
     const user = await User.findByPk(userId);
@@ -79,15 +87,41 @@ async function updateUserById(req, res) {
       user.carnet = carnet;
     }
 
+    if (sex !== undefined) {
+      // Validar que el valor proporcionado sea uno de los permitidos
+      const allowedSexValues = ['masculino', 'femenino', 'no definido'];
+      if (allowedSexValues.includes(sex)) {
+        user.sex = sex;
+      } else {
+        res.status(400).json({ error: 'Invalid value for sex' });
+        return;
+      }
+    }
+
+    // Actualizar los campos relacionados con la membresía
+    if (paymentDate !== undefined) {
+      user.paymentDate = paymentDate;
+    }
+
+    if (paymentDueDate !== undefined) {
+      user.paymentDueDate = paymentDueDate;
+    }
+
+    if (paymentStatus !== undefined) {
+      user.paymentStatus = paymentStatus;
+    }
+
     // Guardar los cambios
     await user.save();
-
+    console.log('User has been updated');
     res.status(200).json(user);
   } catch (error) {
     console.error('Error updating user by ID:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+
 
 
 // Eliminar un usuario por su ID
@@ -104,7 +138,7 @@ async function deleteUserById(req, res) {
 
     // Eliminar el usuario
     await user.destroy();
-
+    console.log('User has been deleted');
     res.status(204).send();
   } catch (error) {
     console.error('Error deleting user by ID:', error);
